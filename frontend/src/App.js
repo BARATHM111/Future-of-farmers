@@ -4,6 +4,8 @@ import { Container } from 'react-bootstrap';
 import Footer from './components/Footer'; // Corrected typo in 'components'
 // import HomeScreen from './screens/HomeScreen';
 import { Outlet } from 'react-router-dom';
+import {  ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
@@ -17,6 +19,7 @@ const App = () => {
         </Container>
       </main>
       <Footer />
+      <ToastContainer/>
     </>
   );
 };
