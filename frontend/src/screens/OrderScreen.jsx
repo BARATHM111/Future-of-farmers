@@ -1,13 +1,11 @@
 import { useEffect } from 'react';
-import { useParams , Link } from 'react-router-dom';
-
-import {Row , Col, ListGroup, Image,  Button , Card} from 'react-bootstrap';
-import {PayPalButtons, usePayPalScriptReducer} from '@paypal/react-paypal-js';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
-// import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { Link, useParams } from 'react-router-dom';
+import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import Message from '../components/Message';
+import Loader from '../components/Loader';
 import {
   useDeliverOrderMutation,
   useGetOrderDetailsQuery,
@@ -15,9 +13,9 @@ import {
   usePayOrderMutation,
 } from '../slices/ordersApiSlice';
 
-
 const OrderScreen = () => {
   const { id: orderId } = useParams();
+
   const {
     data: order,
     refetch,
@@ -40,8 +38,7 @@ const OrderScreen = () => {
     error: errorPayPal,
   } = useGetPaypalClientIdQuery();
 
-  
-   useEffect(()=> {
+  useEffect(() => {
     if (!errorPayPal && !loadingPayPal && paypal.clientId) {
       const loadPaypalScript = async () => {
         paypalDispatch({
@@ -59,11 +56,8 @@ const OrderScreen = () => {
         }
       }
     }
+  }, [errorPayPal, loadingPayPal, order, paypal, paypalDispatch]);
 
-
-   }, [order,paypal, errorPayPal, loadingPayPal,paypalDispatch])
-
-   
   function onApprove(data, actions) {
     return actions.order.capture().then(async function (details) {
       try {
@@ -101,66 +95,21 @@ const OrderScreen = () => {
         return orderID;
       });
   }
-  
-  function onApprove(data, actions) {
-    return actions.order.capture().then(async function (details) {
-      try {
-        await payOrder({ orderId, details });
-        refetch();
-        toast.success('Order is paid');
-      } catch (err) {
-        toast.error(err?.data?.message || err.error);
-      }
-    });
-  }
 
- // TESTING ONLY! REMOVE BEFORE PRODUCTION
-  async function onApproveTest() {
-    await payOrder({ orderId, details: { payer: {} } });
+  const deliverHandler = async () => {
+    await deliverOrder(orderId);
     refetch();
-
-    toast.success('Order is paid');
-  }
-
-  function onError(err) {
-    toast.error(err.message);
-  }
-
-  function createOrder(data, actions) {
-    return actions.order
-      .create({
-        purchase_units: [
-          {
-            amount: { value: order.totalPrice },
-          },
-        ],
-      })
-      .then((orderID) => {
-        return orderID;
-      });
-  }
-
-  const deliverOrderHandler = async () => {
-    try {
-      // Call the deliverOrder mutation to update the order status in the database
-      await deliverOrder(orderId);
-      // Refetch the order details to get the updated information
-     refetch();
-      // Show a success message to the user
-      toast.success('Order delivered');
-    } catch (err) {
-      // Show an error message if there's an issue delivering the order
-      toast.error(err?.data?.message || err.message);
-    }
   };
-  
 
-  
-  return isLoading ? <Loader />  :  error ? <Message variant='danger' /> : (
+  return isLoading ? (
+    <Loader />
+  ) : error ? (
+    <Message variant='danger'>{error.data.message}</Message>
+  ) : (
     <>
-    <h1>Order {order._id}</h1>
-    <Row>
-    <Col md={8}>
+      <h1>Order {order._id}</h1>
+      <Row>
+        <Col md={8}>
           <ListGroup variant='flush'>
             <ListGroup.Item>
               <h2>Shipping</h2>
@@ -209,7 +158,12 @@ const OrderScreen = () => {
                     <ListGroup.Item key={index}>
                       <Row>
                         <Col md={1}>
-                          <Image src={item.image}alt={item.name} fluid rounded />
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fluid
+                            rounded
+                          />
                         </Col>
                         <Col>
                           <Link to={`/product/${item.product}`}>
@@ -232,17 +186,20 @@ const OrderScreen = () => {
             <ListGroup variant='flush'>
               <ListGroup.Item>
                 <h2>Order Summary</h2>
-    
+              </ListGroup.Item>
+              <ListGroup.Item>
                 <Row>
                   <Col>Items</Col>
                   <Col>${order.itemsPrice}</Col>
                 </Row>
-          
+              </ListGroup.Item>
+              <ListGroup.Item>
                 <Row>
                   <Col>Shipping</Col>
                   <Col>${order.shippingPrice}</Col>
                 </Row>
- 
+              </ListGroup.Item>
+              <ListGroup.Item>
                 <Row>
                   <Col>Tax</Col>
                   <Col>${order.taxPrice}</Col>
@@ -254,21 +211,21 @@ const OrderScreen = () => {
                   <Col>${order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-               {!order.isPaid && (
+              {!order.isPaid && (
                 <ListGroup.Item>
                   {loadingPay && <Loader />}
 
                   {isPending ? (
                     <Loader />
                   ) : (
-                    <div> 
+                    <div>
                       {/* THIS BUTTON IS FOR TESTING! REMOVE BEFORE PRODUCTION! */}
-                       <Button
+                      {/* <Button
                         style={{ marginBottom: '10px' }}
                         onClick={onApproveTest}
                       >
                         Test Pay Order
-                      </Button> 
+                      </Button> */}
 
                       <div>
                         <PayPalButtons
@@ -282,7 +239,7 @@ const OrderScreen = () => {
                 </ListGroup.Item>
               )}
 
-               {loadingDeliver && <Loader />}
+              {loadingDeliver && <Loader />}
 
               {userInfo &&
                 userInfo.isAdmin &&
@@ -291,17 +248,19 @@ const OrderScreen = () => {
                   <ListGroup.Item>
                     <Button
                       type='button'
-                      className='btn btn-block' onClick={deliverOrderHandler}
-                    > Mark As Delivered
+                      className='btn btn-block'
+                      onClick={deliverHandler}
+                    >
+                      Mark As Delivered
                     </Button>
                   </ListGroup.Item>
-                )} 
+                )}
             </ListGroup>
           </Card>
         </Col>
       </Row>
     </>
   );
-
 };
+
 export default OrderScreen;

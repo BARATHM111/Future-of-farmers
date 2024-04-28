@@ -514,8 +514,10 @@ button,
 [type='button'],
 [type='reset'],
 [type='submit'] {
-  -webkit-appearance: button;
+  -webkit-appearance: button; /* Vendor-prefixed property */
+  appearance: button; /* Standard property */
 }
+
 button:not(:disabled),
 [type='button']:not(:disabled),
 [type='reset']:not(:disabled),
@@ -572,7 +574,8 @@ legend + * {
 
 [type='search'] {
   outline-offset: -2px;
-  -webkit-appearance: textfield;
+  -webkit-appearance: textfield; /* Vendor-prefixed property */
+  appearance: textfield; /* Standard property */
 }
 
 /* rtl:raw:
@@ -593,7 +596,8 @@ legend + * {
 
 ::file-selector-button {
   font: inherit;
-  -webkit-appearance: button;
+  -webkit-appearance: button; /* Vendor-prefixed property */
+  appearance: button; /* Standard property */
 }
 
 output {
@@ -3278,7 +3282,7 @@ fieldset:disabled .btn {
 }
 
 .btn-outline-success {
-  --bs-btn-color: #18bc9c;
+  --bs-btn-color:  #FFFFFF;
   --bs-btn-border-color: #18bc9c;
   --bs-btn-hover-color: #000;
   --bs-btn-hover-bg: #18bc9c;
